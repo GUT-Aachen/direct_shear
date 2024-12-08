@@ -1,0 +1,46 @@
+/* style.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #dee7e2;
+}
+
+h1 {
+    color: #263ec7;
+    text-align: center;
+}
+
+.slider-label {
+    font-weight: bold;
+    color: #cc2323;
+}
+
+.slider {
+    margin-top: 10px;
+}
+
+button {
+    background-color: #2267f0;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #17bb17;
+}
+
+.graph-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (max-width: 700px) {
+    .graph-container {
+        flex-direction: column; /* Stack graphs vertically on small screens */
+    }
+}
