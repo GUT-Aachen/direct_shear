@@ -720,3 +720,8 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
 # Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
+    
+
+# Expose the server
+server = app.server
+
