@@ -1,46 +1,259 @@
 /* style.css */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #dee7e2;
+    background-color: #ffffff8e;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Add this to your CSS file */
+.dash-interval {
+    display: none; /* Hide the updating message */
 }
 
 h1 {
-    color: #263ec7;
+    color: #00549f;
     text-align: center;
+    margin-top: 20%;
+    font-size: 2vw;
 }
+
+/* General container styling */
+.dropdown-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2%;
+    padding: 3%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    max-width: 100%;
+    margin: 1% auto; /* Center align */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Label styling */
+.dropdown-label {
+    font-size: 1vw; /* Responsive text size */
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 2% 0%; /* Adjust the margin */
+}
+
+/* Dropdown styling */
+#soil-type-dropdown {
+    font-size: 1vw;
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 0 0 1% 0%; /* Adjust the margin */
+    background-color: #fff;
+}
+
+/* Buttons container */
+#start-button, #pause-button, #reset-button {
+    flex: 1; /* Equal width for buttons */
+    padding: 0.8em 1em; /* Use relative units for padding */
+    font-size: 1vw;
+    font-weight: bold;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 0 1% 0%; /* Adjust the margin */
+    transition: background-color 0.3s ease;
+}
+
+/* Individual button styles */
+#start-button {
+    background-color: #28a745;
+}
+
+#start-button:hover {
+    background-color: #218838;
+}
+
+#pause-button {
+    background-color: #ffc107;
+}
+
+#pause-button:hover {
+    background-color: #e0a800;
+}
+
+#reset-button {
+    background-color: #dc3545;
+}
+
+#reset-button:hover {
+    background-color: #c82333;
+}
+
 
 .slider-label {
     font-weight: bold;
     color: #cc2323;
+    margin-left: 1%;
+    font-size: 1.2vw;
 }
+
 
 .slider {
-    margin-top: 10px;
+    margin-top: 1%;
+    margin-bottom: 2%;
+    margin-left: 0%;
 }
 
-button {
-    background-color: #2267f0;
-    color: white;
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
+/* Style the marks' font */
+.rc-slider-mark-text {
+    font-size: 0.8vw; /* Adjust the font size */
+    font-family: 'Arial', sans-serif; /* Set the font family */
+    color: #333; /* Set the font color */
+    font-weight: bold; /* Optional: bold font */
 }
 
-button:hover {
-    background-color: #17bb17;
+/* Style the slider tooltip (indicator) */
+.rc-slider-tooltip-inner {
+    font-size: 0.9vw; /* Adjust the font size */
+    font-family: 'Arial', sans-serif; /* Set the font family */
+    color: #ffffff; /* Set the text color */
+    background-color: #00549f; /* Change the tooltip background color */
+    border-radius: 40%; /* Add rounded corners */
 }
+
+.layer-properties {
+    margin: 1%;
+}
+
+.h3 {
+    color: #080808;
+    margin-left: 1%;
+    font-size: 1vw;
+}
+
+.input-label {
+    margin: 2%;
+    font-size: 0.8vw;
+}
+
+.input-field {
+    width: 4vw;
+    font-size: 0.8vw;
+}
+
+
+.graph-input-container {
+    margin-top: 2%;
+    background-color: #fff;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 10vw; /* Width of the tooltip */
+    background-color: #00559fad; /* Background color */
+    color: #fff; /* Text color */
+    text-align: center;
+    font-family: 'Arial', sans-serif; /* Font family */
+    font-size: 0.8vw; /* Font size */
+    font-weight: 400; /* Font weight (400 is regular) */
+    line-height: 1.4; /* Line height for readability */
+    border-radius: 5%; /* Rounded corners */
+    padding: 5%; /* Padding inside the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: 0%;
+    left: 105%; /* Position it slightly to the right of the icon */
+    transform: translateY(-50%);
+    opacity: 0; /* Start as hidden */
+    transition: opacity 0.3s; /* Fade effect */
+    white-space: wrap; /* Prevent text wrap */
+}
+
+/* Info icon */
+.info-icon {
+    width: 0.8vw; /* Width of the icon */
+    height: 0.8vw; /* Height of the icon */
+    margin-left: 10%; /* Space between label and icon */
+    margin-right: 10%; /* Space between label and icon */
+    max-width: 150%; /* Optional: limit the maximum width */
+    max-height: 150%; /* Optional: limit the maximum height */
+}
+
+/* Show the tooltip on hover */
+.tooltip:hover .tooltiptext {
+    visibility: visible; /* Show tooltip */
+    opacity: 1; /* Make it visible */
+}
+
+
 
 .graph-container {
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #1777d185;
+    border-radius: 1%;
+    box-shadow: 0px 4px 8px rgba(133, 25, 25, 0.1);
+    padding: 0.5%;
 }
 
-@media screen and (max-width: 700px) {
-    .graph-container {
-        flex-direction: column; /* Stack graphs vertically on small screens */
-    }
+.logo {
+    margin-top: 0.5%;
+    margin-left: 4%;
 }
+
+/* Style for the table */
+.anchored-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1vw;
+    font-family: Arial, sans-serif;
+    border: 1px solid black;
+    position: absolute; /* Anchor the table */
+    bottom: 0; /* Position it at the bottom of the container */
+}
+
+/* Style for the table headers */
+.table-header {
+    text-align: center;
+    background-color: rgb(230, 230, 230); /* Optional for header styling */
+}
+
+/* Style for table cells */
+.table-cell {
+    text-align: center;
+    border: 1px solid black; /* Adds border to all cells */
+    background-color: white; /* Ensures cell background matches the table */
+}
+
+/* Style for the input container inside the table cell */
+.input-container {
+    display: inline-block;
+    text-align: center;
+}
+
+
+#update-button {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 10px;
+    background-color: #1777d185; /* Green background */
+    color: white; /* White text color */
+    font-size: 16px; /* Font size */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.5s ease; /* Smooth transition */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+#update-button:hover {
+    background-color: #00549f; /* Darker green when hovered */
+}
+
