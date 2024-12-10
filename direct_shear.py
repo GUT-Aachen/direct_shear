@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output, State
 import numpy as np
 import plotly.graph_objs as go
 import pandas as pd
+import os
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}])
 
@@ -155,7 +156,7 @@ app.layout = html.Div([
     # Interval component for animation
     dcc.Interval(id='interval-component', interval=200, n_intervals=0, disabled=True),
 
-        # Add the logo image to the top left corner
+    # Add the logo image to the top left corner
     html.Img(
         src='/assets/logo.png', className='logo',
         style={
@@ -170,7 +171,14 @@ app.layout = html.Div([
 
 
 
-
+# Store the state of the animation (whether it's running or not)
+animation_running = False
+shear_displacement = np.linspace(0, 10, 100)
+shear_strain = shear_displacement / 100
+shear_stress = np.zeros(300)
+height_change = np.zeros(100)  # Initialize height_change
+max_steps = len(shear_strain)
+current_step = 0  # Keep track of the current step
 
 # Callback to handle the animations and input updates
 @app.callback(
@@ -192,18 +200,19 @@ app.layout = html.Div([
     [State('interval-component', 'disabled')]
 )
 def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_3, cohesion, friction_angle, start_clicks, pause_clicks, reset_clicks, interval_disabled):
+    global animation_running, current_step, shear_stress, height_change
+
+    mohr_fig = go.Figure()
+    shear_box_fig = go.Figure()
+    stress_strain_fig = go.Figure()
+    height_change_fig = go.Figure()
     
-    # Store the state of the animation (whether it's running or not)
-    animation_running = False  # Keep track of the animation state
-    shear_displacement = np.linspace(0, 10, 100)
-    shear_strain = shear_displacement / 100
-    max_steps = len(shear_strain)
-    current_step = 0  # Keep track of the current step
-
-
-
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Form the full path to the CSV file
+    file_path = os.path.join(current_dir, 'data.csv')
+    
     # Read the CSV file (replace 'data.csv' with your actual file name)
-    df = pd.read_csv('direct_shear/data.csv', sep=';')  
+    df = pd.read_csv(file_path, sep=';')  
     # Access a specific column by its name
     h_disp = df['H_disp']  # Access the "H_disp" column
     ss_l = df['SS_L']      # Access the "SS_L" column
@@ -230,12 +239,6 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
             interval_disabled = True
             current_step = 0
             return go.Figure(), go.Figure(), go.Figure(), go.Figure(), True, 0  # Reset figures
-        
-    mohr_fig = go.Figure()
-    shear_box_fig = go.Figure()
-    stress_strain_fig = go.Figure()
-    height_change_fig = go.Figure()
-
 
     # Update the current step if the animation is running
     if animation_running:
