@@ -154,7 +154,7 @@ app.layout = html.Div([
 
 
     # Interval component for animation
-    dcc.Interval(id='interval-component', interval=200, n_intervals=0, disabled=True),
+    dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
 
     # Add the logo image to the top left corner
     html.Img(
