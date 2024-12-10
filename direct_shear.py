@@ -153,7 +153,7 @@ app.layout = html.Div([
 
 
     # Interval component for animation
-    dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
+    dcc.Interval(id='interval-component', interval=200, n_intervals=0, disabled=True),
 
         # Add the logo image to the top left corner
     html.Img(
@@ -168,11 +168,8 @@ app.layout = html.Div([
     ])  # End of main container
 ])
 
-animation_running = False  # Keep track of the animation state
-shear_displacement = np.linspace(0, 10, 100)
-shear_strain = shear_displacement / 100
-max_steps = len(shear_strain)
-current_step = 0  # Keep track of the current step
+
+
 
 
 # Callback to handle the animations and input updates
@@ -195,9 +192,13 @@ current_step = 0  # Keep track of the current step
     [State('interval-component', 'disabled')]
 )
 def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_3, cohesion, friction_angle, start_clicks, pause_clicks, reset_clicks, interval_disabled):
-    global animation_running, current_step, shear_stress, height_change
-
+    
     # Store the state of the animation (whether it's running or not)
+    animation_running = False  # Keep track of the animation state
+    shear_displacement = np.linspace(0, 10, 100)
+    shear_strain = shear_displacement / 100
+    max_steps = len(shear_strain)
+    current_step = 0  # Keep track of the current step
 
 
 
