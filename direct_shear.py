@@ -154,7 +154,7 @@ app.layout = html.Div([
 
 
     # Interval component for animation
-    dcc.Interval(id='interval-component', interval=1000, n_intervals=0, disabled=True),
+    dcc.Interval(id='interval-component', interval=100, n_intervals=0, disabled=True),
 
     # Add the logo image to the top left corner
     html.Img(
@@ -173,10 +173,10 @@ app.layout = html.Div([
 
 # Store the state of the animation (whether it's running or not)
 animation_running = False
-shear_displacement = np.linspace(0, 10, 100)
+shear_displacement = np.linspace(0, 80, 81)
 shear_strain = shear_displacement / 100
-shear_stress = np.zeros(300)
-height_change = np.zeros(100)  # Initialize height_change
+shear_stress = np.zeros_like(shear_strain)
+height_change = np.zeros_like(shear_strain)  # Initialize height_change
 max_steps = len(shear_strain)
 current_step = 0  # Keep track of the current step
 
@@ -200,25 +200,13 @@ current_step = 0  # Keep track of the current step
     [State('interval-component', 'disabled')]
 )
 def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_3, cohesion, friction_angle, start_clicks, pause_clicks, reset_clicks, interval_disabled):
-    global animation_running, current_step, shear_stress, height_change
+    global animation_running, current_step, shear_strain, shear_stress, height_change
 
+    # Initialize figures
     mohr_fig = go.Figure()
     shear_box_fig = go.Figure()
-    stress_strain_fig = go.Figure()
+    stress_strain_fig = go.Figure() 
     height_change_fig = go.Figure()
-    
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Form the full path to the CSV file
-    file_path = os.path.join(current_dir, 'data.csv')
-    
-    # Read the CSV file (replace 'data.csv' with your actual file name)
-    df = pd.read_csv(file_path, sep=';')  
-    # Access a specific column by its name
-    h_disp = df['H_disp']  # Access the "H_disp" column
-    ss_l = df['SS_L']      # Access the "SS_L" column
-    ss_d = df['SS_D']      # Access the "SS_D" column
-    vd_l = df['Vd_L']      # Access the "Vd_L" column
-    vd_d = df['Vd_D']      # Access the "Vd_D" column
 
     ## Ensure step size is valid
     step_size = 0.1  # This ensures the graph updates step-by-step
@@ -229,8 +217,8 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
         if 'start-button' in ctx.triggered[0]['prop_id']:
             animation_running = True
             interval_disabled = False
-            if current_step >= max_steps:
-                current_step = 0  # Restart from the beginning
+            # if current_step >= max_steps:
+            #     current_step = 0  # Restart from the beginning
         elif 'pause-button' in ctx.triggered[0]['prop_id']:
             animation_running = False
             interval_disabled = True
@@ -254,71 +242,136 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
     else:
         step_size = current_step
 
+
+
     # Stress-strain and height-change curves based on soil type
     if soil_type == 'dense':
         # shear_stress_1 = -16.1 +(38.78 - (-16.1)) *((-0.42225 / (1 + 10 ** ((0.03646 - shear_strain) * 72.78))) + ((1 - (-0.4225)) / (1 + 10 ** ((0.0075 - shear_strain) * 57.42))))
+        for normal_stress in [normal_stress_1, normal_stress_2, normal_stress_3]:
+            shear_stress = np.zeros_like(shear_strain)
+            height_change = np.zeros_like(shear_strain)
+            
+            for i, strain in enumerate(shear_strain):
+                if strain < 0.19:
+                    s_y0 = (normal_stress / 100) *1.16
+                    s_A = -s_y0
+                    s_R0 = -8.8
+                    shear_stress[i] = s_y0 + s_A * np.exp(s_R0 * strain)
+                else:
+                    s_y0 = (normal_stress / 100) * 0.65
+                    s_A1 = -s_y0 * 100
+                    s_t1 =  0.09
+                    s_A2 = -s_A1 * 0.9
+                    s_t2 = s_t1 * 1.072
+                    shear_stress[i] = s_y0 + s_A1 * np.exp(-strain / s_t1) + s_A2 * np.exp(-strain / s_t2)
+            
+            for i, strain in enumerate(shear_strain):
+                if strain <shear_strain[np.argmax(shear_stress)]:
+                    v_A = 0.223 * (normal_stress / 100) **0.9
+                    v_w = 0.2 * (normal_stress / 100) **0.2
+                    v_xc = 0.19 * (normal_stress / 100) **0.2
+                    v_y0 = -v_A  * np.sin(np.pi * (-v_xc) / v_w)
+                    height_change[i] = v_y0+ v_A * np.sin(np.pi * (strain - v_xc) / v_w)
+                else:
+                    v_y0 = (100/normal_stress) *0.58
+                    v_A = -(100/normal_stress) *1.96
+                    v_R0 = -6.93
+                    height_change[i] = v_y0 + v_A * np.exp(v_R0 * strain)
+            
+            if normal_stress == normal_stress_1:
+                shear_stress_1 = shear_stress
+                height_change_1 = height_change
+                peak_point_text = 'P1'
+                cs_text = 'CS_1'
+            elif normal_stress == normal_stress_2:
+                shear_stress_2 = shear_stress
+                height_change_2 = height_change
+                peak_point_text = 'P2'
+                cs_text = 'CS_2'
+            elif normal_stress == normal_stress_3:
+                shear_stress_3 = shear_stress
+                height_change_3 = height_change
+                peak_point_text = 'P3'
+                cs_text = 'CS_3'
 
-        shear_stress = ss_d[:step_size]
-        height_change = vd_d[:step_size]
-        if (ss_d[:step_size] == ss_d.max()).any():
-            # Adding a scatter point for peak stress with text "P" in stress-strain figure
-            stress_strain_fig.add_trace(go.Scatter(
-                x=[0.28], 
-                y=[0.845], 
-                mode='markers+text',  # Enable both markers and text
-                marker=dict(color='blue', size=10),
-                text=["P"],  # Add text
-                textposition="top center",  # Position the text relative to the marker
-                showlegend=False,
-                hoverinfo='none'
-            ))
+            if (shear_stress[:step_size] == shear_stress.max()).any():
+                # Adding a scatter point for peak stress in stress-strain figure
+                stress_strain_fig.add_trace(go.Scatter(
+                    x=[shear_strain[np.argmax(shear_stress)]], 
+                    y=[np.max(shear_stress)], 
+                    mode='markers+text',  # Enable both markers and text
+                    marker=dict(color='black', size=10),
+                    text=[peak_point_text],  # Add text
+                    textposition="top center",  # Position the text relative to the marker
+                    showlegend=False,
+                    hoverinfo='none'
+                ))
 
-            # Adding a scatter point for peak stress with text "P" in height change figure
-            height_change_fig.add_trace(go.Scatter(
-                x=[0.28], 
-                y=[0.307], 
-                mode='markers+text',  # Enable both markers and text
-                marker=dict(color='blue', size=10),
-                text=["P"],  # Add text
-                textposition="top center",  # Position the text relative to the marker
-                showlegend=False,
-                hoverinfo='none'
-            ))
+                # Adding a scatter point for corresponding height change in height change figure
+                height_change_fig.add_trace(go.Scatter(
+                    x=[shear_strain[np.argmax(shear_stress)]], 
+                    y=[height_change[np.argmax(shear_stress)]], 
+                    mode='markers+text',  # Enable both markers and text
+                    marker=dict(color='black', size=10),
+                    text=[peak_point_text],  # Add text
+                    textposition="top center",  # Position the text relative to the marker
+                    showlegend=False,
+                    hoverinfo='none'
+                ))
+
+            # add CS annotation at the maximum shear strain
+            if (height_change[:step_size]== height_change.max()).any():
+                print(np.max(height_change))
+                stress_strain_fig.add_trace(go.Scatter(
+                    x=[shear_strain[np.argmax(height_change)]],
+                    y=[shear_stress[np.argmax(height_change)]],
+                    mode='markers+text',
+                    marker=dict(color='black', size=10),
+                    text=[cs_text],
+                    textposition="top center",
+                    showlegend=False,
+                    hoverinfo='none'
+                ))
+                height_change_fig.add_trace(go.Scatter(
+                    x=[shear_strain[np.argmax(height_change)]],
+                    y=np.max(height_change),
+                    mode='markers+text',
+                    marker=dict(color='black', size=10),
+                    text=[cs_text],
+                    textposition="top center",
+                    showlegend=False,
+                    hoverinfo='none'
+                ))
 
             
 
         
     elif soil_type == 'loose':
-        peak_stress = cohesion + normal_stress_1 * np.tan(np.radians(friction_angle))
-        residual_stress = peak_stress  # No significant residual stress for loose soil
+
         # shear_stress_1 = 38.8 + (-39.35)*np.exp(-32.49*shear_strain)
-        shear_stress = ss_l[:step_size]
+        # shear_stress = ss_l[:step_size]
+        # height_change=vd_l[:step_size]
+        for normal_stress in [normal_stress_1, normal_stress_2, normal_stress_3]:
 
-        height_change=vd_l[:step_size]
-        if (ss_l[:step_size] == ss_l.max()).any():
-            # Adding a scatter point for stress-strain figure with text "P"
-            stress_strain_fig.add_trace(go.Scatter(
-                x=[0.86], 
-                y=[0.604], 
-                mode='markers+text',  # Enable both markers and text
-                marker=dict(color='blue', size=10),
-                text=["P"],  # Add text
-                textposition="top center",  # Position the text relative to the marker
-                showlegend=False,
-                hoverinfo='none'
-            ))
+            s_y0=(normal_stress/100) * 0.65
+            s_A=-s_y0
+            s_R0=-3.107
+            shear_stress = s_y0 + s_A *  np.exp(s_R0 * shear_strain)
 
-            # Adding a scatter point for height change figure with text "P"
-            height_change_fig.add_trace(go.Scatter(
-                x=[0.86], 
-                y=[-0.784], 
-                mode='markers+text',  # Enable both markers and text
-                marker=dict(color='blue', size=10),
-                text=["P"],  # Add text
-                textposition="top center",  # Position the text relative to the marker
-                showlegend=False,
-                hoverinfo='none'
-            ))
+            v_y0=-(normal_stress/100) * 0.81
+            v_A=-v_y0
+            v_R0=-3.9
+            height_change=v_y0 + v_A *  np.exp(v_R0 * shear_strain)
+            if normal_stress == normal_stress_1:
+                shear_stress_1 = shear_stress
+                height_change_1 = height_change
+            elif normal_stress == normal_stress_2:
+                shear_stress_2 = shear_stress
+                height_change_2 = height_change
+            elif normal_stress == normal_stress_3:
+                shear_stress_3 = shear_stress
+                height_change_3 = height_change
+
 
 
     # Mohr-Coulomb Failure Envelope
@@ -413,7 +466,7 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
     )
 
     # Shear box movement
-    shear_displacement = shear_strain[step_size] * 50
+    shear_displacement = shear_strain[step_size] *5
     
 
     # Original position of the lower box (dashed border)
@@ -633,12 +686,34 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
 
     # Create stress-strain figure for animation
     stress_strain_fig.add_trace(go.Scatter(
-        x=h_disp, 
-        y=shear_stress[:step_size], 
+        x=shear_strain[:step_size], 
+        y=shear_stress_1[:step_size], 
         mode='lines', 
         line=dict(color='red', width=3),
-        name='Normal Stress',
-        showlegend=False, 
+        name='Normal Stress_1',
+        showlegend=True, 
+        hoverinfo='none'
+        )
+    )
+
+    stress_strain_fig.add_trace(go.Scatter(
+        x=shear_strain[:step_size], 
+        y=shear_stress_2[:step_size], 
+        mode='lines', 
+        line=dict(color='green', width=3),
+        name='Normal Stress_2',
+        showlegend=True, 
+        hoverinfo='none'
+        )
+    )
+
+    stress_strain_fig.add_trace(go.Scatter(
+        x=shear_strain[:step_size], 
+        y=shear_stress_3[:step_size], 
+        mode='lines', 
+        line=dict(color='blue', width=3),
+        name='Normal Stress_3',
+        showlegend=True, 
         hoverinfo='none'
         )
     )
@@ -646,9 +721,9 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
 
     stress_strain_fig.update_layout(
         plot_bgcolor='white',
-        xaxis_title='Horizantal displacement',     # Set the title for the x-axis
+        xaxis_title='Horizantal displacement (Shear strain)',     # Set the title for the x-axis
         yaxis_title='Shear stress',
-        font=dict(family="Times New Roman, Arial, sans-serif", size=16, color="black", weight="bold"),
+        font=dict(family="Times New Roman, Arial, sans-serif", size=12, color="black", weight="bold"),
         xaxis=dict(
             range=[0, 1],  # Set the range for the x-axis
             mirror=True,           # Mirror the axes on all sides
@@ -661,7 +736,7 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
             fixedrange=True
         ),
         yaxis=dict(
-            range=[0, 1],  # Set the range for the y-axis
+            range=[0, 3],  # Set the range for the y-axis
             mirror=True,           # Mirror the axes on all sides
             showline=True,         # Show the axes line
             linewidth=2,           # Set the width of the axes line
@@ -676,20 +751,43 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
     # Create height-change figure for animation
     
     height_change_fig.add_trace(go.Scatter(
-        x=h_disp, 
-        y=height_change[:step_size], 
+        x=shear_strain[:step_size], 
+        y=height_change_1[:step_size], 
         mode='lines', 
         line=dict(color='red', width=3),
-        name='Height Change',
-        showlegend=False, 
+        name='Height Change_1',
+        showlegend=True, 
         hoverinfo='none'
         )
     )
+
+    height_change_fig.add_trace(go.Scatter(
+        x=shear_strain[:step_size], 
+        y=height_change_2[:step_size], 
+        mode='lines', 
+        line=dict(color='green', width=3),
+        name='Height Change_2',
+        showlegend=True, 
+        hoverinfo='none'
+        )
+    )
+
+    height_change_fig.add_trace(go.Scatter(
+        x=shear_strain[:step_size], 
+        y=height_change_3[:step_size], 
+        mode='lines', 
+        line=dict(color='blue', width=3),
+        name='Height Change_3',
+        showlegend=True, 
+        hoverinfo='none'
+        )
+    )
+
     height_change_fig.update_layout(
         plot_bgcolor='white',
-        xaxis_title='Horizontal displacement',
-        yaxis_title='Change in height',
-        font=dict(family="Times New Roman, Arial, sans-serif", size=16, color="black", weight="bold"),
+        xaxis_title='Horizontal displacement (Shear strain)',
+        yaxis_title='Change in height (Volumetric strain)',
+        font=dict(family="Times New Roman, Arial, sans-serif", size=10, color="black", weight="bold"),
         xaxis=dict(
             range=[0, 1],  # Set the range for the x-axis
             mirror=True,  # Mirror the axes on all sides
@@ -703,7 +801,7 @@ def update_graphs(n, soil_type, normal_stress_1, normal_stress_2, normal_stress_
             fixedrange=True
         ),
         yaxis=dict(
-            range=[-1, 1],  # Set the range for the y-axis
+            range=[-2, 2],  # Set the range for the y-axis
             mirror=True,  # Mirror the axes on all sides
             showline=True,  # Show the axes line
             linewidth=2,  # Set the width of the axes line
