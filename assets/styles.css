@@ -31,24 +31,69 @@ h1 {
     max-width: 100%;
     margin: 1% auto; /* Center align */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%; /* Ensure responsiveness on smaller screens */
 }
 
 /* Label styling */
 .dropdown-label {
-    font-size: 1vw; /* Responsive text size */
+    font-size: 0.9vw; /* Slightly larger font size for better readability */
     font-weight: bold;
     color: #333;
-    margin: 0 0 2% 0%; /* Adjust the margin */
+    margin: 1% 0 0.5% 0%; /* Adjust the margin */
 }
 
-/* Dropdown styling */
-#soil-type-dropdown {
-    font-size: 1vw;
-    padding: 1em;
-    border: 1px solid #ccc;
+/* Style the checklist container */
+.dcc_checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5%;
+    padding: 1%;
+    background-color: #f9f9f9;
     border-radius: 5px;
-    margin: 0 0 1% 0%; /* Adjust the margin */
-    background-color: #fff;
+    box-shadow: 0 0.2% 0.5% rgba(0, 0, 0, 0.1);
+    margin: 0 0 1% 1%; /* Adjust the margin */
+}
+
+/* Target checklist items more specifically using the checklist's id */
+#soil-type-checklist{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5%;
+    padding: 1%;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 0.2% 0.5% rgba(0, 0, 0, 0.1);
+}
+
+
+/* Style the individual checklist items to display flex and align items horizontally */
+#normal-stress-checklist{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center; /* Align the checkbox and label horizontally */
+    gap: 1.5%; /* Add space between checkbox and label */
+    padding: 1%; /* Add padding to the checklist */
+}
+
+/* Style for selected checklist items */
+#soil-type-checklist input:checked + label, #normal-stress-checklist input:checked + label {
+    font-weight: bold;
+    color: #2d87f0;
+}
+
+/* Style the checkboxes */
+#soil-type-checklist label, #normal-stress-checklist label {
+    font-size: 0.8vw;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding-left: 2%; /* Space between checkbox and label */
+}
+
+#soil-type-checklist label:hover, #normal-stress-checklist label:hover {
+    color: #2d87f0;
 }
 
 /* Buttons container */
