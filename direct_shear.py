@@ -288,17 +288,19 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
 
             # Height change calculation for dense soil
             for i, strain in enumerate(shear_strain):
-                if strain < shear_strain[np.argmax(shear_stress)]:
-                    v_A = 0.223 * (normal_stress / 100) ** 0.9
-                    v_w = 0.2 * (normal_stress / 100) ** 0.2
-                    v_xc = 0.19 * (normal_stress / 100) ** 0.2
-                    v_y0 = -v_A * np.sin(np.pi * (-v_xc) / v_w)
-                    height_change[i] = v_y0 + v_A * np.sin(np.pi * (strain - v_xc) / v_w)
-                else:
-                    v_y0 = (100 / normal_stress) * 0.58
-                    v_A = -(100 / normal_stress) * 1.96
-                    v_R0 = -6.93
-                    height_change[i] = v_y0 + v_A * np.exp(v_R0 * strain)
+                    v_A = -0.6 * (normal_stress / 100) **0.01 # Amplitude
+                    v_w = 0.327 * (normal_stress / 100) ** 0.2  # Width
+                    if normal_stress > 100:
+                        v_xc = 0.084 * (normal_stress / 100) ** 0.6 # Center
+                    else:
+                        v_xc = 0.084 * (normal_stress / 100) ** 0.8 # Center
+                    v_y0 = -v_A / (v_w * np.sqrt(np.pi / (4 * np.log(2)))) * np.exp(-4 * np.log(2) * (0 - v_xc) ** 2 / v_w ** 2)
+
+                    # Add a steepness control term for the upper half
+                    height_change[i] = v_y0 + v_A / (v_w * np.sqrt(np.pi / (4 * np.log(2)))) * np.exp(
+                        -4 * np.log(2) * (strain - v_xc)**2 / (v_w**2)
+                    )
+
         elif soil_t == 'loose':
             # Shear stress calculation for loose soil
             for i, strain in enumerate(shear_strain):
@@ -403,12 +405,6 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
                     showlegend=False,
                     hoverinfo='none'
                 ))
-
-
-
-
-
-
 
 
     # Mohr-Coulomb Failure Envelope
