@@ -738,7 +738,7 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
             fixedrange=True
         ),
         yaxis=dict(
-            range=[0, 3],  # Set the range for the y-axis
+            range=[0, 3.2],  # Set the range for the y-axis
             mirror=True,           # Mirror the axes on all sides
             showline=True,         # Show the axes line
             linewidth=2,           # Set the width of the axes line
@@ -770,7 +770,7 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
             fixedrange=True
         ),
         yaxis=dict(
-            range=[-2, 2],  # Set the range for the y-axis
+            range=[-3, 3],  # Set the range for the y-axis
             mirror=True,  # Mirror the axes on all sides
             showline=True,  # Show the axes line
             linewidth=2,  # Set the width of the axes line
