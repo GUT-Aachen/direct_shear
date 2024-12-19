@@ -162,7 +162,7 @@ app.layout = html.Div([
 
 
     # Interval component for animation
-    dcc.Interval(id='interval-component', interval=500, n_intervals=0, disabled=True),
+    dcc.Interval(id='interval-component', interval=100, n_intervals=0, disabled=True),
 
     # Add the logo image to the top left corner
     html.Img(
@@ -273,33 +273,38 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
         if soil_t == 'dense':
             # Shear stress calculation for dense soil
             for i, strain in enumerate(shear_strain):
-                if strain < 0.19:
+                if strain < 0.19*(normal_stress/100)**0.25:
                     s_y0 = (normal_stress / 100) * 1.16
                     s_A = -s_y0
-                    s_R0 = -8.8
+                    if normal_stress > 100:
+                        s_R0 = -15
+                    else:
+                        s_R0 = -20
                     shear_stress[i] = s_y0 + s_A * np.exp(s_R0 * strain)
                 else:
                     s_y0 = (normal_stress / 100) * 0.65
                     s_A1 = -s_y0 * 100
-                    s_t1 = 0.09
-                    s_A2 = -s_A1 * 0.9
+                    s_t1 = 0.09 *(normal_stress / 100) ** 0.25
+                    s_A2 = -s_A1 * 0.92
                     s_t2 = s_t1 * 1.072
                     shear_stress[i] = s_y0 + s_A1 * np.exp(-strain / s_t1) + s_A2 * np.exp(-strain / s_t2)
 
             # Height change calculation for dense soil
             for i, strain in enumerate(shear_strain):
                     v_A = -0.6 * (normal_stress / 100) **0.01 # Amplitude
-                    v_w = 0.327 * (normal_stress / 100) ** 0.2  # Width
                     if normal_stress > 100:
                         v_xc = 0.084 * (normal_stress / 100) ** 0.6 # Center
+                        v_w = 0.327 * (normal_stress / 100) ** 0.2  # Width
                     else:
-                        v_xc = 0.084 * (normal_stress / 100) ** 0.8 # Center
+                        v_xc = 0.084 * (normal_stress / 100) ** 0.9 # Center
+                        v_w = 0.327 * (normal_stress / 100) ** 0.01  # Width
                     v_y0 = -v_A / (v_w * np.sqrt(np.pi / (4 * np.log(2)))) * np.exp(-4 * np.log(2) * (0 - v_xc) ** 2 / v_w ** 2)
 
                     # Add a steepness control term for the upper half
                     height_change[i] = v_y0 + v_A / (v_w * np.sqrt(np.pi / (4 * np.log(2)))) * np.exp(
                         -4 * np.log(2) * (strain - v_xc)**2 / (v_w**2)
                     )
+                    height_change[i] += 0.2 * height_change[i] **2 # Scale down the height change
 
         elif soil_t == 'loose':
             # Shear stress calculation for loose soil
@@ -734,7 +739,7 @@ def update_graphs(n, soil_types, normal_stresses, normal_stress_1, normal_stress
             fixedrange=True
         ),
         yaxis=dict(
-            range=[0, 3.2],  # Set the range for the y-axis
+            range=[0, 3.8],  # Set the range for the y-axis
             mirror=True,           # Mirror the axes on all sides
             showline=True,         # Show the axes line
             linewidth=2,           # Set the width of the axes line
